@@ -304,7 +304,7 @@ export default {
                 path: '/ruleLogManagement/logDetails',
                 query: {
                     ruleExecId: row.ruleExecId,
-                    // ruleExecId: '2343797990495000', //////////////////////////////////////////////
+                    // ruleExecId: '1917868867262300', //////////////////////////////////////////////
                 }
             })
             window.open(newPage.href, "_blank")
