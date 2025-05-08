@@ -16,6 +16,21 @@
                             </tb-search>
                         </div>
                     </div>
+                    <div class="statistics-container" v-loading="statisticsLoading">
+                        <div class="statistics-item">
+                            <span class="statistics-label">核保数：</span>
+                            <span class="statistics-value">{{ statistics.plyCount || 0 }}</span>
+                        </div>
+                        <div class="statistics-item">
+                            <span class="statistics-label">自核通过数：</span>
+                            <span class="statistics-value">{{ statistics.auditSuccCount || 0 }}</span>
+                        </div>
+                        <div class="statistics-item">
+                            <span class="statistics-label">自核通过率：</span>
+                            <span class="statistics-value">{{ statistics.auditSuccRate ? statistics.auditSuccRate + '%'
+                                : '0%' }}</span>
+                        </div>
+                    </div>
                     <div>
                         <tb-table ref="tbTable" :loading="loading" :pager-config="pagerConfig"
                             :handler-btns="handlerBtns" :table-title="tableTitle" :table-data="tableData" border
@@ -92,6 +107,12 @@ export default {
             districtFirstOptions: [], // 扁平机构
             handlerPageSign: "table",
             loading: false,
+            statisticsLoading: false, // 新增统计加载状态
+            statistics: {
+                plyCount: 0,        // 核保数
+                auditSuccCount: 0,   // 自核通过数
+                auditSuccRate: 0     // 自核通过率
+            },
             conditions: deepClone(conditions),
             tableTitle,
             handlerBtns,
@@ -114,6 +135,24 @@ export default {
         this.loadPage()
     },
     methods: {
+        fetchStatistics() {
+            this.statisticsLoading = true;
+
+            this.$api('ruleLog/selectAgriRuleExecStaticis', {
+                ...this.map
+            }).then(res => {
+                if (res.code === 200 && res.data) {
+                    this.statistics = res.data;
+                    // 在这里我们先假设返回的数据格式是合适的
+                    // 等你告诉我实际返回格式后再调整
+                }
+            }).catch(error => {
+                console.error('获取统计数据失败:', error);
+                this.$message.error('获取统计数据失败');
+            }).finally(() => {
+                this.statisticsLoading = false;
+            });
+        },
         // 获取机构
         queryDistrict() {
             this.$api("common/queryDistrict").then((res) => {
@@ -260,6 +299,8 @@ export default {
             }).finally(() => {
                 this.loading = false
             })
+
+            this.fetchStatistics();
         },
 
         // 添加格式化查询参数的方法
@@ -370,6 +411,30 @@ export default {
             .el-table__fixed,
             .el-table__fixed-right {
                 height: 100% !important;
+            }
+        }
+    }
+
+    .statistics-container {
+        display: flex;
+        justify-content: flex-start;
+        margin-bottom: 20px;
+        background-color: #f5f7fa;
+        padding: 15px;
+        border-radius: 4px;
+
+        .statistics-item {
+            margin-right: 40px;
+
+            .statistics-label {
+                font-weight: bold;
+                color: #606266;
+            }
+
+            .statistics-value {
+                color: #409EFF;
+                font-size: 16px;
+                margin-left: 8px;
             }
         }
     }
